@@ -2169,3 +2169,11 @@ try ltrimstr("x") catch "x", try rtrimstr("x") catch "x" | "ok"
 ["ko","endswith() requires string inputs"]
 ["ok",""]
 ["ko","endswith() requires string inputs"]
+
+downcase
+"ǄIǄA"
+"ǆiǆa"
+
+upcase
+"ǆiǆa"
+"ǄIǄA"

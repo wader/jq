@@ -4,6 +4,7 @@
 
 # vendored files
 src/decNumber/** linguist-vendored
+modules/utf8proc/** linguist-vendored
 
 # generated files
 src/lexer.[ch] linguist-generated=true
