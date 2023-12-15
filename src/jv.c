@@ -99,6 +99,10 @@ jv_kind jv_get_kind(jv x) {
   return JVP_KIND(x);
 }
 
+int jv_is_null_kind(jv v) {
+  return jv_get_kind(v) == JV_KIND_FALSE || jv_get_kind(v) == JV_KIND_NULL;
+}
+
 const char* jv_kind_name(jv_kind k) {
   switch (k) {
   case JV_KIND_INVALID: return "<invalid>";

@@ -106,6 +106,7 @@ static void usage(int code, int keep_it_short) {
       "      --jsonargs            consume remaining arguments as positional\n"
       "                            JSON values;\n"
       "  -e, --exit-status         set exit status code based on the output;\n"
+      "  -q, --quiet               no output at all;\n"
 #ifdef WIN32
       "  -b, --binary              open input/output streams in binary mode;\n"
 #endif
@@ -163,8 +164,9 @@ enum {
   EXIT_STATUS           = 4096,
   SEQ                   = 16384,
   RUN_TESTS             = 32768,
+  NO_OUTPUT             = 65536,
   /* debugging only */
-  DUMP_DISASM           = 65536,
+  DUMP_DISASM           = 131072,
 };
 
 enum {
@@ -183,6 +185,15 @@ static int process(jq_state *jq, jv value, int flags, int dumpopts, int options)
   jq_start(jq, value, flags);
   jv result;
   while (jv_is_valid(result = jq_next(jq))) {
+    if (options & NO_OUTPUT) {
+      if (jv_is_null_kind(result))
+        ret = JQ_OK_NULL_KIND;
+      else
+        ret = JQ_OK;
+      jv_free(result);
+      continue;
+    }
+
     if ((options & RAW_OUTPUT) && jv_get_kind(result) == JV_KIND_STRING) {
       if (options & ASCII_OUTPUT) {
         jv_dumpf(jv_copy(result), stdout, JV_PRINT_ASCII);
@@ -198,7 +209,7 @@ static int process(jq_state *jq, jv value, int flags, int dumpopts, int options)
       ret = JQ_OK;
       jv_free(result);
     } else {
-      if (jv_get_kind(result) == JV_KIND_FALSE || jv_get_kind(result) == JV_KIND_NULL)
+      if (jv_is_null_kind(result))
         ret = JQ_OK_NULL_KIND;
       else
         ret = JQ_OK;
@@ -479,6 +490,10 @@ int main(int argc, char* argv[]) {
         options |= EXIT_STATUS;
         if (!short_opts) continue;
       }
+      if (isoption(argv[i], 'q', "quiet", &short_opts)) {
+        options |= NO_OUTPUT;
+        if (!short_opts) continue;
+      }
       // FIXME: For --arg* we should check that the varname is acceptable
       if (isoption(argv[i], 0, "args", &short_opts)) {
         further_args_are_strings = 1;
@@ -726,6 +741,10 @@ int main(int argc, char* argv[]) {
           last_result = (ret != JQ_OK_NULL_KIND);
         if (jq_halted(jq))
           break;
+        continue;
+      }
+
+      if (options & NO_OUTPUT) {
         continue;
       }
 

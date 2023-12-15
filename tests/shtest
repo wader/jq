@@ -152,19 +152,26 @@ fi
 cmp $d/out $d/expected
 
 
-## Test --exit-status
-data='{"i": 1}\n{"i": 2}\n{"i": 3}\n'
-printf "$data" | $JQ --exit-status 'select(.i==1)' > /dev/null 2>&1
-printf "$data" | $JQ --exit-status 'select(.i==2)' > /dev/null 2>&1
-printf "$data" | $JQ --exit-status 'select(.i==3)' > /dev/null 2>&1
-ret=0
-printf "$data" | $JQ --exit-status 'select(.i==4)' > /dev/null 2>&1 || ret=$?
-[ $ret -eq 4 ]
-ret=0
-printf "$data" | $JQ --exit-status 'select(.i==2) | false' > /dev/null 2>&1 || ret=$?
-[ $ret -eq 1 ]
-printf "$data" | $JQ --exit-status 'select(.i==2) | true' > /dev/null 2>&1
+## Test --exit-status, with and without --quiet
+for QUIET in "" "--quiet"; do 
+  data='{"i": 1}\n{"i": 2}\n{"i": 3}\n'
+  printf "$data" | $JQ $QUIET --exit-status 'select(.i==1)' > $d/out 2>&1
+  printf "$data" | $JQ $QUIET --exit-status 'select(.i==2)' >> $d/out 2>&1
+  printf "$data" | $JQ $QUIET --exit-status 'select(.i==3)' >> $d/out 2>&1
+  ret=0
+  printf "$data" | $JQ $QUIET --exit-status 'select(.i==4)' >> $d/out 2>&1 || ret=$?
+  [ $ret -eq 4 ]
+  ret=0
+  printf "$data" | $JQ $QUIET --exit-status 'select(.i==2) | false' >> $d/out 2>&1 || ret=$?
+  [ $ret -eq 1 ]
+  printf "$data" | $JQ $QUIET --exit-status 'select(.i==2) | true' >> $d/out 2>&1
 
+  if [ $QUIET = "--quiet" ]; then
+    cmp $d/out /dev/null
+  fi
+done
+
+## Test quiet without --exit-status
 
 # Regression test for #951
 printf '"a\n' > $d/input
