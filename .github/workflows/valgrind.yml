@@ -23,7 +23,7 @@ jobs:
           ./configure \
             --disable-docs \
             --enable-valgrind \
-            --with-oniguruma=builtin
+            --with-pcre2=builtin
           make -j"$(nproc)"
           file ./jq
       - name: Test

@@ -43,9 +43,9 @@ docker run --rm -i -v "$PWD:$PWD" -w "$PWD" ghcr.io/jqlang/jq:latest '.version' 
 #### Instructions
 
 ```console
-git submodule update --init    # if building from git to get oniguruma
+git submodule update --init    # if building from git to get pcre2
 autoreconf -i                  # if building from git
-./configure --with-oniguruma=builtin
+./configure --with-pcre2=builtin
 make clean                     # if upgrading from a version previously built from source
 make -j8
 make check
