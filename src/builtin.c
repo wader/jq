@@ -994,6 +994,22 @@ static jv f_match(jq_state *jq, jv input, jv regex, jv modifiers, jv testmode) {
                                                 jv_string((char *)buffer)));
   }
 
+  // check if built with jit support
+  uint32_t config_jit = 0;
+  pcre2_config(PCRE2_CONFIG_JIT, &config_jit);
+
+  if (config_jit) {
+    errorcode = pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+    if (errorcode != 0) {
+      PCRE2_UCHAR buffer[256] = {};
+      pcre2_get_error_message(errorcode, buffer, sizeof(buffer));
+      jv_free(input);
+      jv_free(regex);
+      return jv_invalid_with_msg(jv_string_concat(jv_string("regex jit compile failure: "),
+                                                  jv_string((char *)buffer)));
+    }
+  }
+
   uint32_t capture_count = 0;
   PCRE2_SPTR *capture_names = NULL;
 
